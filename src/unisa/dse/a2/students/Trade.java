@@ -12,8 +12,8 @@ public class Trade implements Comparable<Trade> {
 	/**
 	 * @return Track the moment in time this Trade was created
 	 */
-	public void getCreated()
-	{
+	public long getCreated(){
+		return created;
 	}
 	
 	public String listedCompanyCode;
@@ -21,7 +21,8 @@ public class Trade implements Comparable<Trade> {
 	/**
 	 * @return The company's code
 	 */
-	public void getCompanyCode() {
+	public String getCompanyCode() {
+		return listedCompanyCode;
 	}
 	
 	private int shareQuantity;
@@ -29,7 +30,8 @@ public class Trade implements Comparable<Trade> {
 	/**
 	 * @return The quantity of shares to trade
 	 */
-	public void getShareQuantity() {
+	public int getShareQuantity() {
+		return shareQuantity;
 	}
 
 	private StockBroker broker;
@@ -37,7 +39,8 @@ public class Trade implements Comparable<Trade> {
 	/**
 	 * @return The broker associated with this trade
 	 */
-	public void getStockBroker() {
+	public StockBroker getStockBroker() {
+		return broker;
 	}
 
 
@@ -59,8 +62,10 @@ public class Trade implements Comparable<Trade> {
 	 * @param listedCompanyCode
 	 * @param shareQuantity
 	 */
-	public Trade(StockBroker broker, String listedCompanyCode, int shareQuantity)
-	{
+	public Trade(StockBroker broker, String listedCompanyCode, int shareQuantity){
+		this.broker = broker;
+		this.listedCompanyCode = listedCompanyCode;
+		this.shareQuantity = shareQuantity;
 		created = System.nanoTime(); //do not change this
 		tradeId = System.nanoTime(); //do not change this
 		try { Thread.sleep(100); } catch (Exception x) {}
@@ -79,8 +84,26 @@ public class Trade implements Comparable<Trade> {
 	 *  
 	 * @return The ordering priority of the trade
 	 */
-	public int compareTo(Trade t)
-	{
+	public int compareTo(Trade t){
+		boolean thisOnWatchList = broker.getWatchlist().contains(listedCompanyCode);
+		boolean otherOnWatchList = t.broker.getWatchlist().contains(t.listedCompanyCode);
+		
+		if(thisOnWatchList && otherOnWatchList) {
+			return 0; // Both are on there watchList, they are equal
+		}else if(thisOnWatchList && !otherOnWatchList) {
+			return 1; // This trade is on the watchList, other trade is not
+		}else if(!thisOnWatchList && otherOnWatchList) {
+			return -1; // Other trade is on the watchList, this trade is not
+		}else {
+		// If neither trade is on the watchList, compare created timeStamps
+			if(this.created < t.created) {
+				return -1; // "This" is smaller than "Other" return -1
+			}else if (this.created > t.created) {
+				return 1; // "This" is greater that "Other" return 1
+			}else {
+				return 0; // "This" is equal to "Other"
+			}
+		}
 	}
 	
 
