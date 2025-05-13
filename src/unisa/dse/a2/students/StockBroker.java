@@ -28,8 +28,11 @@ public class StockBroker {
 	 * @param companyCode
 	 * @return true if added
 	 */
-	public boolean addWatchlist(String companyCode)
-	{
+	public boolean addWatchlist(String companyCode){
+		if(companyCode == null || watchList.contains(companyCode)) {
+			return false;
+		}
+		return watchList.add(companyCode);
 	}
 	
 	private String name;
@@ -39,38 +42,45 @@ public class StockBroker {
 	 * @return
 	 */
 	public String getName() {
+		return name;
 	}
 	
 	/**
 	 * Should store the broker's name and ensure the broker is setup ready to use
 	 * @param name
 	 */
-	public StockBroker(String name)
-	{
+	public StockBroker(String name){
+		this.name = name;
+		this.pendingTrades = new PriorityQueue<Trade>();
+		this.watchList = new DSEListGeneric<String>();
+		
 	}
 	
 	/**
 	 * Adds the Trade to the pendingTrades list if it's not null and not already in there
-	 * @param companyCode
+	 * @param order Trade to place
 	 * @return true if added
 	 */
-	public boolean placeOrder(Trade order)
-	{
+	public boolean placeOrder(Trade order){
+		if(order == null || pendingTrades.contains(order)) {
+			return false;
+		}
+		return pendingTrades.add(order);
 	}
 	
 	/**
 	 * Gets, removes, and returns the next trade to process
 	 * @return Trade to process
 	 */
-	public Trade getNextTrade()
-	{
+	public Trade getNextTrade(){
+		return pendingTrades.poll();
 	}
 	
 	/**
 	 * @return Number of pending trades
 	 */
-	public int getPendingTradeCount()
-	{
+	public int getPendingTradeCount(){
+		return pendingTrades.size();
 	}
 
 	/**
