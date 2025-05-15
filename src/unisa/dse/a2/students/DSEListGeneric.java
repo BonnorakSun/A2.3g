@@ -22,22 +22,28 @@ public class DSEListGeneric<T> implements ListGeneric<T> {
 	
 	public DSEListGeneric(NodeGeneric<T> head_) {
 		
-		  if (head_ != null) {
+		
+		  if (head_ == null) {
+			  this.head = null;
+			  this.tail = null;
+			  this.size = 0;
+			  return;
+		  }
 		      NodeGeneric<T> newNode = new NodeGeneric<>(null, null, head_.get());
 		      this.head = newNode;
 		      NodeGeneric<T> currentOther = head_.next;
 		      NodeGeneric<T> prev = newNode;
-
+		      size = 1;
+		      // Traverse through the rest original list to copy nodes
 		      while (currentOther != null) {
 		          NodeGeneric<T> copy = new NodeGeneric<>(null, prev, currentOther.get());
-		          prev.next = copy;
-		          prev = copy;
-		          currentOther = currentOther.next;
+		          prev.next = copy; // Link the previous node to the new copied node 
+		          prev = copy; // move to the newly copied node
+		          currentOther = currentOther.next; // Move to the next node in the original list
+		          size++; // Increment the size for each new node added
 		      }
-
+		      // set the tail to the last node
 		      tail = prev;
-		      size = computeSize();
-		  }
 	}
 	
 	//Takes a list then adds each element into a new list
@@ -80,13 +86,13 @@ public class DSEListGeneric<T> implements ListGeneric<T> {
 	    if (current.prev != null) {
 	        current.prev.next = current.next;
 	    } else {
-	        head = current.next;
+	        head = current.next; // Remove the head
 	    }
 
 	    if (current.next != null) {
 	        current.next.prev = current.prev;
 	    } else {
-	        tail = current.prev;
+	        tail = current.prev; // Removing the tail
 	    }
 
 	    size--;
@@ -183,22 +189,25 @@ public class DSEListGeneric<T> implements ListGeneric<T> {
 	        if (size == 0) {
 	            tail = newNode; // If the list was empty
 	        }
-	    } else {
-	        NodeGeneric<T> current = head;
+	    } 
+	    else if (index == size){
+	    	NodeGeneric<T> current = tail;
+	        current.next = newNode;
+	        newNode.prev = current;
+	        tail = newNode;
+	    }
+	    else {
+	    	NodeGeneric<T> current = head;
 	        for (int i = 0; i < index - 1; i++) {
 	            current = current.next;
 	        }
-
 	        newNode.next = current.next;
 	        if (current.next != null) {
 	            current.next.prev = newNode;
 	        }
+	        
 	        current.next = newNode;
 	        newNode.prev = current;
-
-	        if (newNode.next == null) {
-	            tail = newNode; // If added at the tail
-	        }
 	    }
 
 	    size++;
@@ -220,26 +229,37 @@ public class DSEListGeneric<T> implements ListGeneric<T> {
 	    return true;
 	}
 	
-	// Helper method to compute size
-	private int computeSize() {
-		int count = 0;
-		NodeGeneric<T> current = head;
-		while(current != null) {
-			count++;
-			current = current.next;
-		}
-			
-		return count;
-	}
 	
 	@Override
 	public int hashCode() {
-		return 0;
+		int result = 1;
+		NodeGeneric<T> current = head;
+		while(current != null) {
+			result = 31  * result + (current.get() != null ? current.get().hashCode() : 0);
+			current = current.next;
+		}
+		return result;
 	}
 
 	@Override
 	public boolean equals(Object other) {
-		return true;
+		if (this == other) return true; // Same object
+		if (other == null || getClass() != other.getClass()) return false;
+		
+		DSEListGeneric<?> otherList = (DSEListGeneric<?>) other;
+		if (this.size != otherList.size) return false; // Different sizes
+		
+		NodeGeneric<T> current = this.head;
+		NodeGeneric<?> otherCurrent = otherList.head;
+				
+		while (current != null) {
+			if (!current.get().equals(otherCurrent.get())) {
+				return false; // Elements do not match
+			}
+			current = current.next;
+			otherCurrent = otherCurrent.next;
+		}
+		return true; // All elements match
 	}
 	
 }
