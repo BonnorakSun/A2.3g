@@ -23,22 +23,22 @@ public class DSEList implements List {
 	// Constructor with one Node 
 	public DSEList(Node head_) {
 		
-		if (head != null) {
-			Node newNode = new Node(null, null, head_.getString());
-			this.head = newNode;
-			Node currentOther = head_.next;
-			Node prev = newNode;
-			
-			while (currentOther != null) {
-				Node copy = new Node(null, prev, currentOther.getString());
-				prev.next = copy;
-				prev = copy;
-				currentOther = currentOther.next;
-			}
-			
-			tail = prev;
-			size = computeSize();
+		if(head_ == null) {
+			this.head = null;
+			this.tail = null;
+			this.size = 0;
+			return;
 		}
+		
+		this.head = head_;
+		Node current = head_;
+		this.size = 1;
+		
+		while(current.next != null) {
+			current = current.next;
+			this.size++;
+		}
+		this.tail = current;
 	}
 	
 	//Takes a list then adds each element into a new list
@@ -102,15 +102,25 @@ public class DSEList implements List {
 	//returns the index of the String parameter 
 	public int indexOf(String obj) {
 		
+		if (obj == null) return -1;
+		// Try to start from the closer end (head or tail)
 		Node current = head;
 		int index = 0;
-		
-		while (current != null) {
-			if (current.getString().equals(obj)) {
-				return index;
+		// If index is closer to head, traverse from head, otherwise from tail
+		if (size / 2 > index) {
+			while (current != null) {
+				if (current.getString().equals(obj)) return index; 
+				current = current.next;
+				index++;
 			}
-			current = current.next;
-			index++;
+		}else {
+			current = tail;
+			index = size - 1;
+			while(current != null) {
+				if(current.getString().equals(obj)) return index;
+				current = current.prev;
+				index--;
+			}
 		}
 		
 		return -1; // not found
@@ -139,7 +149,6 @@ public class DSEList implements List {
 
 	//return the size of the list
 	public int size() {
-		
 		return size;
 	}
 	
@@ -200,24 +209,28 @@ public class DSEList implements List {
 				tail = newNode; // If the list was empty
 			}
 		}
-		else {
+		// adding at the tail
+		else if(index == size){
+			Node current = tail;
+			current.next = newNode;
+			newNode.prev = current;
+			tail = newNode;
+		}
+		// Adding in the middle
+		else{
 			Node current = head;
-			for (int i = 0; i < index; i++) {
+			for (int i = 0; i < index - 1; i++) {
 				current = current.next;
 			}
 			
 			newNode.next = current.next;
-			if (current.next != null) {
+			if(current.next != null) {
 				current.next.prev = newNode;
 			}
+			
 			current.next = newNode;
 			newNode.prev = current;
-			
-			if(newNode.next == null) {
-				tail = newNode; // If added at the tail
-			}
 		}
-		
 		size++;
 		return true;
 	}
@@ -238,27 +251,38 @@ public class DSEList implements List {
 		remove(index);
 		return true;
 	}
-	
-	// Helper method to compute size
-	private int computeSize() {
-		int count = 0;
-		Node current = head;
-		while(current != null) {
-			count++;
-			current = current.next;
-		}
 		
-		return count;
-	}
-	
 	@Override
 	public int hashCode() {
-		return 0;
+		int result = 1;
+		Node current = head;
+		while(current != null) {
+			result = 31 * result + (current.getString() != null ? current.getString().hashCode() : 0);
+			current = current.next;
+		}
+		return result;
 	}
 
 	@Override
 	public boolean equals(Object other) {
-		return true;
+		if (this == other) return true; // Same Object
+		// Null or different type
+		if (other == null || getClass() != other.getClass()) return false; 
+		DSEList otherList = (DSEList) other;
+		
+		if (this.size != otherList.size) return false; // Different size
+		
+		Node current = this.head;
+		Node otherCurrent = otherList.head;
+		
+		while(current != null) {
+			if(!current.getString().equals(otherCurrent.getString())) {
+				return false; // Elements do not match
+			}
+			current = current.next;
+			otherCurrent = otherCurrent.next;
+		}
+		return true; // All elements match
 	}
 	
 }
