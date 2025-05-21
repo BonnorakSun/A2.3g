@@ -1,5 +1,6 @@
 package unisa.dse.a2.marking;
 
+import unisa.dse.a2.students.DSEList;
 import unisa.dse.a2.students.ListedCompany;
 import unisa.dse.a2.students.SecuritiesExchange;
 import unisa.dse.a2.students.StockBroker;
@@ -52,7 +53,50 @@ public class Driver {
 			System.out.println(x.getMessage());
 		}
 		
+		System.out.println("\n--- Test 1: Adding duplicate company ---");
+		ListedCompany repeatCompany = new ListedCompany("DALL", "Duplicate Dall", 500);
+		boolean added = exchange.addCompany(repeatCompany);
+		System.out.println("Attempt to add duplicate company (should be false): " + added);
+
+		System.out.println("\n--- Test 2: Watchlist prioritization ---");
+		harry.addWatchlist("TSLA");
+		harry.placeOrder(new Trade(harry, "TSLA", 200)); // now on watchList
+		Trade nextTrade = harry.getNextTrade();
+		System.out.println("Trade retrieved (should be prioritized due to watchlist): " + nextTrade.getCompanyCode());
+
+		System.out.println("\n--- Test 3: Watchlist equality ---");
+		StockBroker anotherHarry = new StockBroker("Honest Harry Broking");
+		anotherHarry.addWatchlist("TSLA");
+		System.out.println("Harry equals AnotherHarry (should be true if names match): " + harry.equals(anotherHarry));
 		
+		System.out.println("\n--- Test 4: Trading unlisted company ---");
+		try {
+		    dave.placeOrder(new Trade(dave, "WIKI", 0));  // WIKI was not added to exchange
+		    exchange.processTradeRound(); // should throw exception
+		} catch (UntradedCompanyException e) {
+		    System.out.println("Caught expected UntradedCompanyException: " + e.getMessage());
+		}
+		
+		System.out.println("\n--- Test 5: Trade created-time comparison ---");
+		Trade t1 = new Trade(harry, "DALL", 50);
+		Trade t2 = new Trade(harry, "DALL", 50);
+		System.out.println("CompareTo (should be -1 or 1 based on creation): " + t1.compareTo(t2));
+		
+		System.out.println("\n--- Test 6: No trades ---");
+		StockBroker emptyBroker = new StockBroker("Empty Broker");
+		System.out.println("Pending trades: " + emptyBroker.getPendingTradeCount());
+		System.out.println("Next trade (should be null): " + emptyBroker.getNextTrade());
+		
+		System.out.println("\n--- Test 7: DSEList manual test ---");
+		DSEList list = new DSEList();
+		list.add("AAPL");
+		list.add("GOOG");
+		list.add("MSFT");
+		System.out.println("List: " + list.toString());
+		list.remove("GOOG");
+		System.out.println("After removal: " + list.toString());
+		System.out.println("Contains MSFT? " + list.contains("MSFT"));
+
 	}
 
 }
